@@ -1,4 +1,4 @@
-# Healthcare AI Agent Service
+# Healthcare AI Agent Service..
 
 Minimal FastAPI service for the Healthcare AI RAG Platform lab.
 
