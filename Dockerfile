@@ -6,6 +6,10 @@ ENV APP_HOME=/app
 
 WORKDIR ${APP_HOME}
 
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && rm -rf /var/lib/apt/lists/*
+
 RUN addgroup --system app && adduser --system --ingroup app app
 
 COPY requirements.txt .
