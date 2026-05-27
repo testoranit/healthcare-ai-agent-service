@@ -1,10 +1,40 @@
+# Python cache and test output
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+*.py[cod]
+*$py.class
+
+# Virtual environments
 .venv/
 venv/
+env/
+
+# Local environment files
 .env
-*.pyc
+.env.*
+!.env.example
+
+# Coverage and test reports
 coverage.xml
 .coverage
 htmlcov/
+junit.xml
+
+# Build and packaging output
+build/
+dist/
+*.egg-info/
+
+# Local Docker/SBOM/security outputs
+sbom.spdx.json
+trivy-report.*
+gitleaks-report.*
+
+# Logs and local files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
