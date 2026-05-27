@@ -11,6 +11,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "README.md"
+      - "STEP5_GITHUB_ACTIONS_SETUP.md"
 
 permissions:
   id-token: write
@@ -20,6 +23,10 @@ permissions:
 env:
   IMAGE_TAG: ${{ github.sha }}
   ECR_REPOSITORY: healthcare-ai-dev-agent
+
+concurrency:
+  group: app-ci-cd-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
@@ -40,7 +47,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
 
       - name: Lint
         run: ruff check .
@@ -99,6 +108,12 @@ jobs:
           format: spdx-json
           output-file: sbom.spdx.json
 
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: healthcare-ai-agent-sbom
+          path: sbom.spdx.json
+
       - name: Push image
         env:
           IMAGE_URI: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
@@ -119,6 +134,10 @@ jobs:
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
 
+      - name: Ensure latest GitOps main
+        working-directory: gitops
+        run: git pull --ff-only origin main
+
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v2
 
@@ -126,6 +145,7 @@ jobs:
         working-directory: gitops/apps/healthcare-ai-agent/overlays/dev
         run: |
           kustomize edit set image healthcare-ai-agent=${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          kustomize edit set namespace healthcare-ai-dev
 
       - name: Commit GitOps change
         working-directory: gitops
